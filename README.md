@@ -4,8 +4,6 @@ This package provides a ROS wrapper for [YOLOv3](https://pjreddie.com/darknet/yo
 **Authors**: Vasileios Vasilopoulos (<vvasilo@seas.upenn.edu>), Georgios Pavlakos (<pavlakos@seas.upenn.edu>)
 **Adapted by**: Raghava Uppuluri
 
-**Affiliation**: [University of Pennsylvania, GRASP Lab](https://www.grasp.upenn.edu)
-
 ## Prerequisites
 To download the prerequisites for this package (except for ROS itself), navigate to the package folder and run:
 ```

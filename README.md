@@ -1,7 +1,8 @@
-# yolov3_pytorch_ros
-This package provides a ROS wrapper for [YOLOv3](https://pjreddie.com/darknet/yolo) based on [PyTorch-YOLOv3](https://github.com/eriklindernoren/PyTorch-YOLOv3). For consistency, the [messages](msg) are based on the [darknet_ros](https://github.com/leggedrobotics/darknet_ros) package. The package has been tested with Ubuntu 16.04 and ROS Kinetic on a NVIDIA Jetson TX2.
+# yolov5_pytorch_ros
+This package provides a ROS wrapper for [YOLOv3](https://pjreddie.com/darknet/yolo) based on [PyTorch-YOLOv5](v). For consistency, the [messages](msg) are based on the [darknet_ros](https://github.com/leggedrobotics/darknet_ros) package. The package has NOT been tested yet.
 
 **Authors**: Vasileios Vasilopoulos (<vvasilo@seas.upenn.edu>), Georgios Pavlakos (<pavlakos@seas.upenn.edu>)
+**Adapted by**: Raghava Uppuluri
 
 **Affiliation**: [University of Pennsylvania, GRASP Lab](https://www.grasp.upenn.edu)
 
@@ -14,14 +15,11 @@ $ sudo pip install -r requirements.txt
 ## Installation
 Navigate to your catkin workspace and run:
 ```
-$ catkin build yolov3_pytorch_ros
+$ catkin build yolov5_pytorch_ros
 ```
 
 ## Basic Usage
 1. First, make sure to put your weights in the [models](models) folder. For the **training process** in order to use custom objects, please refer to the original [YOLO page](https://pjreddie.com/darknet/yolo/). As an example, to download pre-trained weights from the COCO data set, go into the [models](models) folder and run:
-```
-wget http://pjreddie.com/media/files/yolov3.weights
-```
 
 2. Modify the parameters in the [launch file](launch/detector.launch) and launch it. You will need to change the `image_topic` parameter to match your camera, and the `weights_name`, `config_name` and `classes_name` parameters depending on what you are trying to do.
 

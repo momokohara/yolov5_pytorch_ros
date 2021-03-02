@@ -1,11 +1,13 @@
 # yolov5_pytorch_ros
-This package provides a ROS wrapper for [YOLOv3](https://pjreddie.com/darknet/yolo) based on [PyTorch-YOLOv5](v). For consistency, the [messages](msg) are based on the [darknet_ros](https://github.com/leggedrobotics/darknet_ros) package. The package has NOT been tested yet.
+This package provides a ROS wrapper for YOLOv5 based on [PyTorch-YOLOv5](v). The package has NOT been tested yet.
 
 **Authors**: Vasileios Vasilopoulos (<vvasilo@seas.upenn.edu>), Georgios Pavlakos (<pavlakos@seas.upenn.edu>)
 **Adapted by**: Raghava Uppuluri
 
 ## Prerequisites
-To download the prerequisites for this package (except for ROS itself), navigate to the package folder and run:
+Make a virtual environment
+
+To download the prerequisites for this package (except for ROS itself) (ideally into a ), navigate to the package folder and run:
 ```
 $ sudo pip install -r requirements.txt
 ```
@@ -30,14 +32,6 @@ $ catkin build yolov5_pytorch_ros
 * **`weights_name`** (string)
 
     Weights to be used from the [models](models) folder.
-
-* **`config_name`** (string)
-
-    The name of the configuration file in the [config](config) folder. Use `yolov3.cfg` for YOLOv3, `yolov3-tiny.cfg` for tiny YOLOv3, and `yolov3-voc.cfg` for YOLOv3-VOC.
-
-* **`classes_name`** (string)
-
-    The name of the file for the detected classes in the [classes](classes) folder. Use `coco.names` for COCO, and `voc.names` for VOC.
 
 * **`publish_image`** (bool)
 

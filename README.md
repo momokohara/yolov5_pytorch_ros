@@ -5,23 +5,67 @@ This package provides a ROS wrapper for YOLOv5 based on [PyTorch-YOLOv5](v). The
 **Adapted by**: Raghava Uppuluri
 
 ## Prerequisites
-Make a virtual environment
+1. Have a conda environmeent
+2. Have ROS installed
+If you haven't done any of those: see [this tutorial](https://wiki.purduearc.com/wiki/tutorials/setup-ros) to do both.
 
-To download the prerequisites for this package (except for ROS itself) (ideally into a ), navigate to the package folder and run:
+## Quick Start
+
+1. Download the prerequisites for this package, navigate to the package folder and run:
 ```
-$ sudo pip install -r requirements.txt
+# Ensure your conda environment is activated
+conda install -f requirements.txt
 ```
 
 ## Installation
+Clone the repo into your `src` folder of your `catkinn_ws`. 
+```
+git clone https://github.com/raghavauppuluri13/yolov5_pytorch_ros.git
+```
+
 Navigate to your catkin workspace and run:
 ```
-$ catkin build yolov5_pytorch_ros
+catkin build yolov5_pytorch_ros
+# adds package to your path
+source ~/catkin_ws/devel/setup.bash 
 ```
 
 ## Basic Usage
-1. First, make sure to put your weights in the [models](models) folder. For the **training process** in order to use custom objects, please refer to the original [YOLO page](https://pjreddie.com/darknet/yolo/). As an example, to download pre-trained weights from the COCO data set, go into the [models](models) folder and run:
+To maximize portability, create a separate package and launch file. Add your weights into a `weights` folder of that package.
+```
+catkin_create_pkg my_detector
+mkdir weights
+mkdir launch
+# Add weights
+# Don't forget to build and source after
+```
 
-2. Modify the parameters in the [launch file](launch/detector.launch) and launch it. You will need to change the `image_topic` parameter to match your camera, and the `weights_name`, `config_name` and `classes_name` parameters depending on what you are trying to do.
+Then, add the following to `mydetector.launch` in the launch folder:
+```xml
+<launch>
+  <include file="$(find yolov5_pytorch_ros)/launch/detector.launch">
+    <!-- Camera topic and weights, config and classes files -->
+    <arg name="image_topic"	                value="/camera/image_raw"/>
+    <!-- Absolute path to weights file (change this) -->
+    <arg name="weights_name"	            value="$(find my_detector)/weights/weights.pt"/>
+
+    <!-- Published topics -->
+    <arg name="publish_image"	            value="true"/>
+    <arg name="detected_objects_topic"      value="detected_objects_in_image"/>
+    <arg name="detections_image_topic"      value="detections_image_topic"/>
+
+    <!-- Detection confidence -->
+    <arg name="confidence"                  value="0.7"/>
+  </include>
+</launch>
+```
+
+Finally, run the detector:
+```
+roslaunch my_detector mydetector.launch
+```
+![detector](https://github.com/purdue-arc/wiki/blob/master/wiki/robot-arm/assets/images/obj_det_may_21.png)
+> Should get something like this when viewed from rviz
 
 ### Node parameters
 

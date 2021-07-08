@@ -2,7 +2,7 @@
 <launch>
     <!-- Camera topic and weights, config and classes files -->
     <arg name="image_topic"	                default="/cv_camera_node/image_rect_color"/>
-    <arg name="weights_name"	            default="chess.pt"/>
+    <arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/weights/chess.pt"/>
 
     <!-- Published topics -->
     <arg name="publish_image"	            default="true"/>
@@ -13,10 +13,10 @@
     <arg name="confidence"                  default="0.25"/>
 
     <!-- Node -->
-    <node ns="cv_camera_node" name="detector_manager" pkg="yolov5_pytorch_ros" type="detect.py" output="screen" respawn="true">
+    <node name="detector" pkg="yolov5_pytorch_ros" type="detect.py" output="screen" respawn="true">
         <param name="image_topic"               value="$(arg image_topic)"/>
         <param name="frame_id"               		value="camera"/>
-        <param name="weights_name"              value="$(arg weights_name)"/>
+        <param name="weights_path"              value="$(arg weights_path)"/>
         <param name="publish_image"             value="$(arg publish_image)"/>
         <param name="detected_objects_topic"    value="$(arg detected_objects_topic)"/>
         <param name="detections_image_topic"    value="$(arg detections_image_topic)"/>

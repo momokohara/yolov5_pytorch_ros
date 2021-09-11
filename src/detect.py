@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import os
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
@@ -21,7 +20,6 @@ from geometry_msgs.msg import Point32, Polygon
 from numpy import random
 from rospkg import RosPack
 from sensor_msgs.msg import Image
-from skimage.transform import resize
 from std_msgs.msg import UInt8
 from torch.autograd import Variable
 from yolov5_pytorch_ros.msg import BoundingBox, BoundingBoxes
@@ -60,10 +58,10 @@ class Detector:
         self.conf_thres = rospy.get_param('~confidence', 0.5)
 
         # Load other parameters
-        self.device_name = 'cpu'
+        self.device_name = '0'
         self.device = select_device(self.device_name)
         self.gpu_id = rospy.get_param('~gpu_id', 0)
-        self.network_img_size = rospy.get_param('~img_size', 416)
+        self.network_img_size = rospy.get_param('~img_size', 640)
         self.publish_image = rospy.get_param('~publish_image')
         self.iou_thres = 0.45
         self.augment = True
@@ -140,13 +138,14 @@ class Detector:
         detection_results.header = data.header
         detection_results.image_header = data.header
         input_img = self.preprocess(self.cv_img)
-        input_img = Variable(input_img.type(torch.FloatTensor))
+        input_img = Variable(input_img.type(torch.cuda.HalfTensor))
 
         # Get detections from network
         with torch.no_grad():
             detections = self.model(input_img)[0]
             detections = non_max_suppression(detections, self.conf_thres, self.iou_thres,
                                              classes=self.classes, agnostic=self.agnostic_nms)
+
         # Parse detections
         if detections[0] is not None:
             for detection in detections[0]:
@@ -203,7 +202,7 @@ class Detector:
             self.padded_image[:, (self.h-self.w)//2: self.w +
                               (self.h-self.w)//2, :] = img
         # Resize and normalize
-        input_img = resize(self.padded_image, (self.network_img_size, self.network_img_size, 3))/255.
+        input_img = cv2.resize(self.padded_image, (self.network_img_size, self.network_img_size))/255.
 
         # Channels-first
         input_img = np.transpose(input_img, (2, 0, 1))

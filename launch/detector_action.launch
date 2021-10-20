@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <!-- Camera topic and weights, config and classes files -->
-    <arg name="image_topic"	                default="/image_raw"/>
     <arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/weights/yolo_theta.pt"/>
 
     <!-- Published topics -->
@@ -14,8 +13,7 @@
 
     <!-- Node -->
     <node name="detector_action" pkg="yolov5_pytorch_ros" type="detect_action.py" output="screen" respawn="true">
-        <param name="image_topic"               value="$(arg image_topic)"/>
-        <param name="frame_id"               		value="camera"/>
+        <param name="frame_id"                  value="camera"/>
         <param name="weights_path"              value="$(arg weights_path)"/>
         <param name="publish_image"             value="$(arg publish_image)"/>
         <param name="detected_objects_topic"    value="$(arg detected_objects_topic)"/>
@@ -23,5 +21,8 @@
         <param name="confidence"                value="$(arg confidence)"/>
     </node>
 
+    <!-- Debug -->
+    <!--
     <node name="push_image_action" pkg="yolov5_pytorch_ros" type="push_image_action" output="screen" respawn="true"/>
+    -->
 </launch>

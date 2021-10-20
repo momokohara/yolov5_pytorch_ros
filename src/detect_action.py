@@ -52,13 +52,7 @@ class Detector:
         if not os.path.isfile(self.weights_path):
             raise IOError(('{:s} not found.').format(self.weights_path))
 
-        # Load image parameter and confidence threshold
-        self.image_topic = rospy.get_param(
-            '~image_topic', '/camera/rgb/image_raw')
-
-        log_str = "Subscribing to image topic: %s" % self.image_topic
-        rospy.loginfo(log_str)
-
+        # Load confidence threshold
         self.conf_thres = rospy.get_param('~confidence', 0.5)
 
         # Load other parameters
@@ -116,13 +110,7 @@ class Detector:
             '~detected_objects_topic')
         self.published_image_topic = rospy.get_param('~detections_image_topic')
 
-        # Define subscribers
-#        self.image_sub = rospy.Subscriber(
-#            self.image_topic, Image, self.image_cb, queue_size=1, buff_size=2**24)
-
         # Define publishers
-#        self.pub_ = rospy.Publisher(
-#            self.detected_objects_topic, BoundingBoxes, queue_size=10)
         self.pub_viz_ = rospy.Publisher(
             self.published_image_topic, Image, queue_size=10)
         rospy.loginfo("Launched action server for object detection")
@@ -188,8 +176,7 @@ class Detector:
                     # Append in overall detection message
                     detection_results.bounding_boxes.append(detection_msg)
 
-            # Publish detection results
-    #        self.pub_.publish(detection_results)
+            # Send detection results
             result = BoundingBoxesResult(yolo_result = detection_results)
             self.action_server_.set_succeeded(result)
 

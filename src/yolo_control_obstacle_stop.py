@@ -24,12 +24,11 @@ class ObjectTracker():
         self.image_width = 640
         self.image_height = 480
 
-        # self._pub_cmdvel = rospy.Publisher("/icart_mini/cmd_vel", Twist, queue_size=1)
-        self._pub_cmdvel = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
-        self._pub_bool = rospy.Publisher("/white_flag", Bool, queue_size=1)
+        self._pub_cmdvel = rospy.Publisher("/icart_mini/cmd_vel", Twist, queue_size=1)
+        # self._pub_cmdvel = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
+        # self._pub_bool = rospy.Publisher("/white_success", Bool, queue_size=1)
 
-    def boundingbox_callback(self, boundingbox):
-        msg = boundingbox
+    def boundingbox_callback(self, msg):
         point = False
         # initialization
         box_xmin = 0
@@ -42,45 +41,52 @@ class ObjectTracker():
 #        bounding_box = len(msg.bounding_boxes)
 #        if len(msg.bounding_boxes) >= 1:
 
-        if(msg.bounding_boxes[0].Class != "None"):
+        if(msg.bounding_boxes[0].Class != "None"):  # true (recognized objects in boundingboxes)
             for box in msg.bounding_boxes:
-                print("-------- for ----------")
-                print(box)
-#                print("box = " + str(box))
-                box_xmin = float(box.xmin)
-#                print("box_xmin : " + str(box_xmin))
-                box_xmax = float(box.xmax)
-#                print("box_xmax : " + str(box_xmax))
-                box_ymin = float(box.ymin)
-#                print("box_ymin : " + str(box_ymin))
-                box_ymax = float(box.ymax)
-#                print("box_ymax : " + str(box_ymax))
-                probability = box.probability
-                (x_center, y_center) = ((box_xmin + box_xmax)//2, (box_ymin + box_ymax)//2)
-#                print("x_center : " + str(x_center))
-#                print("y_center : " + str(y_center))
+                if box.Class == "white_line":  # true (recognized white_line in boundingboxes)
+                    print("-------- for ----------")
+                    point = True
+                    print(box)
+#                   print("box = " + str(box))
+                    box_xmin = float(box.xmin)
+#                   print("box_xmin : " + str(box_xmin))
+                    box_xmax = float(box.xmax)
+#                   print("box_xmax : " + str(box_xmax))
+                    box_ymin = float(box.ymin)
+#                   print("box_ymin : " + str(box_ymin))
+                    box_ymax = float(box.ymax)
+#                   print("box_ymax : " + str(box_ymax))
+                    probability = box.probability
+                    (x_center, y_center) = ((box_xmin + box_xmax)//2, (box_ymin + box_ymax)//2)
+#                   print("x_center : " + str(x_center))
+#                   print("y_center : " + str(y_center))
 
-                self.point = (x_center, y_center)
-                print(point)
-                # print(type(point))
-        else:
-            # print("whiteline is not detected")
-            self.point = False
-    
+                    point = (x_center, y_center)
+                    print(point)
+                    print(type(point))
+                else:  # false (recognized white_line in boundingboxes)
+                    point = False
+        else:  # false (recognized objects inboundingboxes)
+            point = False
+
+        return point
+
+
+
     def _stop_threshold(self):
         stop_threshold = 48
-        # not_stop_range = self.image_height - stop_threshold
-        not_stop_range = stop_threshold
+        not_stop_range = self.image_height - stop_threshold
+        # not_stop_range = stop_threshold
         return not_stop_range
 
     def _move_zone(self):
-        #if self.point[1] <= self._stop_threshold():
-        if self.point[1] >= self._stop_threshold():
+        if self.point[1] <= self._stop_threshold():
+        # if self.point[1] >= self._stop_threshold():
             return True
 
     def _stop_zone(self):
-        # if self.point[1] > self._stop_threshold():
-        if self.point[1] < self._stop_threshold():
+        if self.point[1] > self._stop_threshold():
+        # if self.point[1] < self._stop_threshold():
             return True
 
     def _rotation_velocity(self):
@@ -89,9 +95,8 @@ class ObjectTracker():
             return 0.0
 
         half_width = self.image_width / 2.0
-        # pos_x_rate = (half_width - self.point[0]) / half_width
         pos_x_rate = (half_width - self.point[0]) / half_width
-        pos_x_rate = pos_x_rate * -1
+        # pos_x_rate = pos_x_rate * -1
         rot_vel = pos_x_rate * VELOCITY
         return rot_vel
 
@@ -109,18 +114,21 @@ class ObjectTracker():
 
 
     def main_control(self, msg):
-        if self.point is False:
-            print("white_line is not detected")
+        self.point = self._calculate_centroid_point(msg)
+
+        # if self.point is False:
+        #     print("white_line is not detected")
         
         # print("center point calculate")
         cmd_vel = Twist()
+
         bool = Bool()
         # print(type(self.point))
-        # print(self.point)
+        print(self.point)
         if type(self.point) == tuple:
             if self.command == 1:   # None obstacle
                 if self._move_zone():
-                    cmd_vel.linear.x = 0.1
+                    cmd_vel.linear.x = 0.2
                     print("forward")
                 if self._stop_zone():
                     cmd_vel.linear.x = 0
@@ -133,15 +141,18 @@ class ObjectTracker():
                 print("!!!!!!!!!obstacle stop!!!!!!!!!!!!")
 
         else:
-            cmd_vel.linear.x = 0
-            cmd_vel.angular.z = self._rotation_velocity()
+            print("!!!!!!!!white_line is not detected. Start search whiteline!!!!!!!!")
+            cmd_vel.linear.x = 0.2
+            #cmd_vel.linear.x = 0
+            #cmd_vel.angular.z = self._rotation_velocity()
+
         self._pub_cmdvel.publish(cmd_vel)
-        self._pub_bool.publish(bool)
+        #self._pub_bool.publish(bool)
 
 
 if __name__ == '__main__':
     rospy.init_node('object_tracking')
     ot = ObjectTracker()
-    rospy.Subscriber("/scan", LaserScan, ot.ranges_callback, queue_size = 1)
-    rospy.Subscriber("/detected_objects_in_image", BoundingBoxes, ot.boundingbox_callback, queue_size=1)
+    rospy.Subscriber("/hokuyo_scan", LaserScan, ot.ranges_callback, queue_size = 1)
+    rospy.Subscriber("/detected_objects_in_image", BoundingBoxes, ot.main_callback, queue_size=1)
     rospy.spin()

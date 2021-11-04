@@ -1,4 +1,3 @@
 <launch>
-  <node name="control" pkg="yolov5_pytorch_ros" type="yolo_control_search_whiteline.py" output="screen"/>
-  <node name="rviz" pkg="rviz" type="rviz"/>
+  <node name="control" pkg="yolov5_pytorch_ros" type="yolo_control_obstacle_stop.py" output="screen"/>
 </launch>

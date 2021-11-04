@@ -2,7 +2,7 @@
 <launch>
     <!-- Camera topic and weights, config and classes files -->
 	<arg name="image_topic"	                default="/usb_cam/image_raw"/>
-	<arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/exp7_all_usbcam_datasets/weights/best.pt"/>
+	<arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/exp8_all_usbcam_add1101_datasets/weights/best.pt"/>
 
     <!-- Published topics -->
     <arg name="publish_image"	            default="true"/>

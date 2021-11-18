@@ -104,7 +104,9 @@ class ObjectTracker():
 
 
     def main_control(self, msg):
-        if type(msg.data) == bool:
+        # if type(msg.data) == bool:
+        if msg.data == True:
+
             cmd_vel = Twist()
 
             """

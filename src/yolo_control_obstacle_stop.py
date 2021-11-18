@@ -28,7 +28,7 @@ class ObjectTracker():
         # self._pub_cmdvel = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
         # self._pub_bool = rospy.Publisher("/white_success", Bool, queue_size=1)
 
-    def boundingbox_callback(self, msg):
+    def _calculate_centroid_point(self, msg):
         point = False
         # initialization
         box_xmin = 0
@@ -103,17 +103,17 @@ class ObjectTracker():
     def ranges_callback(self, scan):
         msg = scan
         print("##################")
-        print(msg.ranges)
-
-        for i in msg.ranges:
-            if i <= 0.45:
-                self.command = 0
-            else:
-                self.command = 1
+        print(len(msg.ranges))
+        print(min(msg.ranges))
+        if min(msg.ranges) <= 0.05:
+            self.command = 0
+            print("near obstacle")
+        else:
+            self.command = 1
         print("##################")
 
 
-    def main_control(self, msg):
+    def main_callback(self, msg):
         self.point = self._calculate_centroid_point(msg)
 
         # if self.point is False:
@@ -130,7 +130,7 @@ class ObjectTracker():
                 if self._move_zone():
                     cmd_vel.linear.x = 0.2
                     print("forward")
-                if self._stop_zone():
+                elif self._stop_zone():
                     cmd_vel.linear.x = 0
                     bool.data = True
                     print("stay")
@@ -153,6 +153,6 @@ class ObjectTracker():
 if __name__ == '__main__':
     rospy.init_node('object_tracking')
     ot = ObjectTracker()
-    rospy.Subscriber("/hokuyo_scan", LaserScan, ot.ranges_callback, queue_size = 1)
+    rospy.Subscriber("/scan", LaserScan, ot.ranges_callback, queue_size = 1)
     rospy.Subscriber("/detected_objects_in_image", BoundingBoxes, ot.main_callback, queue_size=1)
     rospy.spin()

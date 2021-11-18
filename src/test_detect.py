@@ -42,7 +42,8 @@ package_path = package.get_path('yolov5_pytorch_ros')
 
 class Detector:
     def __init__(self):
-        self.detector_flag = False
+        self.detector = False
+        self.finish = False
 
         # Load weights parameter
         self.weights_path = rospy.get_param('~weights_path')
@@ -121,32 +122,24 @@ class Detector:
         rospy.loginfo("Launched node for object detection")
 
         # Spin
-        rospy.spin()
+        # rospy.spin()
     
     def image_cb(self, data):
         self.img_data = data
         # Convert the image to OpenCV
         try:
-            self.cv_img = self.bridge.imgmsg_to_cv2(data, "rgb8")
+            self.cv_img = self.bridge.imgmsg_to_cv2(self.img_data, "rgb8")
         except CvBridgeError as e:
             print(e)
 
     def finish_callback(self, msg):
-        self.finish_msg = msg
+        self.finish = True
 
     def main_callback(self, flag_msg):
-        """
-        # Convert the image to OpenCV
-        try:
-            self.cv_img = self.bridge.imgmsg_to_cv2(data, "rgb8")
-        except CvBridgeError as e:
-            print(e)
-        """
-
     
-        self.detector_flag = True
+        self.detector = True
 
-        while self.detector_flag == True:
+        while self.detector == True:
 
             # Initialize detection results
 
@@ -187,7 +180,7 @@ class Detector:
                         if ymax_unpad >480:
                             ymax_unpad = 480
                         
-                        print(xmin_unpad)
+                        # print(xmin_unpad)
                         # Populate darknet message
                         detection_msg = BoundingBox()
                         detection_msg.xmin = int(xmin_unpad)
@@ -210,87 +203,14 @@ class Detector:
             # Visualize detection results
             if (self.publish_image):
                 self.visualize_and_publish(detection_results, self.cv_img)
-            return True
-            
-            if self.finish_msg == True:
-                break
+    
+            print("!!!!!!!!!!!!!!!!!!!! main_callback finish !!!!!!!!!!!!!!!!!!!!!!!!")
+            if self.finish == True:
+                self.detector = False
+                self.finish = False
         
-    """
-    def image_cb(self, data):
+        #return true
 
-
-        # Convert the image to OpenCV
-        try:
-            self.cv_img = self.bridge.imgmsg_to_cv2(data, "rgb8")
-        except CvBridgeError as e:
-            print(e)
-        # Initialize detection results
-
-        detection_results = BoundingBoxes()
-        detection_results.header = data.header
-        detection_results.image_header = data.header
-        input_img = self.preprocess(self.cv_img)
-        input_img = Variable(input_img.type(torch.cuda.HalfTensor))
-
-        # Get detections from network
-        with torch.no_grad():
-            detections = self.model(input_img)[0]
-            detections = non_max_suppression(detections, self.conf_thres, self.iou_thres,
-                                             classes=self.classes, agnostic=self.agnostic_nms)
-
-        # Parse detections
-        if detections[0] is not None:
-            if(len(detections[0].cpu().numpy())):
-                for detection in detections[0]:
-                    # Get xmin, ymin, xmax, ymax, confidence and class
-                    xmin, ymin, xmax, ymax, conf, det_class = detection
-                    # print("xmin : " + str(xmin), "ymin : "+str(ymin), "xmax : "+str(xmax), "ymax : "+str(ymax), "conf : "+str(conf), "det_class : "+str(det_class))
-                    pad_x = max(self.h - self.w, 0) * (self.network_img_size/max(self.h, self.w))
-                    pad_y = max(self.w - self.h, 0) * (self.network_img_size/max(self.h, self.w))
-                    # pad_y = max(self.w - self.h, 0) * (480/max(self.h, self.w))
-                    unpad_h = self.network_img_size-pad_y 
-                    # unpad_h = 480-pad_y
-                    unpad_w = self.network_img_size-pad_x
-                    xmin_unpad = ((xmin-pad_x//2)/unpad_w)*self.w
-                    xmax_unpad = ((xmax-xmin)/unpad_w)*self.w + xmin_unpad
-                    ymin_unpad = ((ymin-pad_y//2)/unpad_h)*self.h
-                    ymax_unpad = ((ymax-ymin)/unpad_h)*self.h + ymin_unpad
-                    
-                    if xmin_unpad < 0:
-                        xmin_unpad = 0
-                    if ymin_unpad < 0:
-                        ymin_unpad = 0
-                    if xmax_unpad > 640:
-                        xmax_unpad = 640
-                    if ymax_unpad >480:
-                        ymax_unpad = 480
-
-                    # Populate darknet message
-                    detection_msg = BoundingBox()
-                    detection_msg.xmin = int(xmin_unpad)
-                    detection_msg.xmax = int(xmax_unpad)
-                    detection_msg.ymin = int(ymin_unpad)
-                    detection_msg.ymax = int(ymax_unpad)
-                    detection_msg.probability = float(conf)
-                    detection_msg.Class = self.names[int(det_class)]
-                    
-                    # conf_boxes = 
-
-                    # Append in overall detection message
-                    detection_results.bounding_boxes.append(detection_msg)
-            else:
-                null_msg = BoundingBox()
-                null_msg.Class = "None"
-                detection_results.bounding_boxes.append(null_msg)
-
-        # Publish detection results
-        self.pub_.publish(detection_results)
-
-        # Visualize detection results
-        if (self.publish_image):
-            self.visualize_and_publish(detection_results, self.cv_img)
-        return True
-    """
 
     def preprocess(self, img):
         # Extract image and shape
@@ -345,10 +265,10 @@ class Detector:
                 x_p3 = output.bounding_boxes[index].xmax
                 y_p3 = output.bounding_boxes[index].ymax
                 confidence = output.bounding_boxes[index].probability
-                # print("x_min : "+ str(x_p1))
-                # print("y_min : "+ str(y_p1))
-                # print("x_Max : "+ str(x_p3))
-                # print("y_Max : "+ str(y_p3))
+                print("x_min : "+ str(x_p1))
+                print("y_min : "+ str(y_p1))
+                print("x_Max : "+ str(x_p3))
+                print("y_Max : "+ str(y_p3))
 
                 # Set class color
                 color = self.colors[self.names.index(label)]
@@ -373,3 +293,4 @@ if __name__ == '__main__':
 
     # Define detector object
     dm = Detector()
+    rospy.spin()

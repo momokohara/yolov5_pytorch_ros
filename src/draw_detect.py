@@ -240,6 +240,19 @@ class Detector:
         font = cv2.FONT_HERSHEY_SIMPLEX
         fontScale = 0.8
         thickness = 2
+        #y_thresh
+        y_min = 130
+        y_max = 200
+
+        #x_thresh
+        left_x_min = 40 
+        left_x_max = 140
+        center_x_min = 190
+        center_x_max = 290
+        right_x_min = 350
+        right_x_max = 450
+        back_x_min = 500
+        back_x_max = 600
         for index in range(len(output.bounding_boxes)):
             if(output.bounding_boxes[index].Class != "None"):
                 label = output.bounding_boxes[index].Class
@@ -252,19 +265,26 @@ class Detector:
                 # print("y_min : "+ str(y_p1))
                 # print("x_Max : "+ str(x_p3))
                 # print("y_Max : "+ str(y_p3))
-
+                x_center = (x_p3 + x_p1)//2
+                y_center = (y_p3 + y_p1)//2
                 # Set class color
                 color = self.colors[self.names.index(label)]
 
                 # Create rectangle
+                cv2.circle(imgOut, (x_center, y_center), 2, (color[0], color[1], color[2]), thickness=-1) #draw x,y_center
                 cv2.rectangle(imgOut, (int(x_p1), int(y_p1)), (int(x_p3), int(
                     y_p3)), (color[0], color[1], color[2]), thickness)
                 text = ('{:s}: {:.3f}').format(label, confidence)
                 cv2.putText(imgOut, text, (int(x_p1), int(y_p1+20)), font, fontScale, (255, 255, 255), thickness, cv2.LINE_AA)
                 # print("imgOut.size = "+ str(imgOut.shape)
+        imgOut_left = cv2.rectangle(imgOut, (left_x_min, y_min), (left_x_max, y_max), (0, 0, 0), thickness)
+        imgOut_center = cv2.rectangle(imgOut_left, (center_x_min, y_min), (center_x_max, y_max), (0, 0, 0), thickness)
+        imgOut_right = cv2.rectangle(imgOut_center, (right_x_min, y_min), (right_x_max, y_max), (0, 0, 0), thickness)
+        imgOut_back = cv2.rectangle(imgOut_right, (back_x_min, y_min), (back_x_max, y_max), (0, 0, 0), thickness)
+        
 
         # Publish visualization image
-        image_msg = self.bridge.cv2_to_imgmsg(imgOut, "rgb8")
+        image_msg = self.bridge.cv2_to_imgmsg(imgOut_back, "rgb8")
         # image_msg = self.bridge.cv2_to_imgmsg(imgOut, "rgb8")
         image_msg.header.frame_id = 'camera'
         image_msg.header.stamp = rospy.Time.now()

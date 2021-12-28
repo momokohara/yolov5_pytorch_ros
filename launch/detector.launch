@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <!-- Camera topic and weights, config and classes files -->
-	<arg name="image_topic"	                default="/usb_cam/image_raw"/>
-	<arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/exp8_all_usbcam_add1101_datasets/weights/best.pt"/>
+	<arg name="image_topic"	                default="/image/mercator"/>
+	<arg name="weights_path"	            default="$(find yolov5_pytorch_ros)/proc_exp15/weights/best.pt"/>
 
     <!-- Published topics -->
     <arg name="publish_image"	            default="true"/>
@@ -13,7 +13,7 @@
     <arg name="confidence"                  default="0.25"/>
 
     <!-- Node -->
-    <node name="detector" pkg="yolov5_pytorch_ros" type="detect.py" output="screen" respawn="true">
+    <node name="detector" pkg="yolov5_pytorch_ros" type="draw_detect.py" output="screen" respawn="true">
         <param name="image_topic"               value="$(arg image_topic)"/>
         <param name="frame_id"               		value="camera"/>
         <param name="weights_path"              value="$(arg weights_path)"/>

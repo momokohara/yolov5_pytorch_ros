@@ -377,8 +377,8 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
     Returns:
          detections with shape: nx6 (x1, y1, x2, y2, conf, cls)
     """
-    # print(prediction[..., 4])
-    nc = prediction.shape[2] - 5  # number of classes  # prediction.shape = torch.Size([1, 25200, 6])
+
+    nc = prediction.shape[2] - 5  # number of classes
     xc = prediction[..., 4] > conf_thres  # candidates
 
     # Settings
@@ -415,7 +415,6 @@ def non_max_suppression(prediction, conf_thres=0.25, iou_thres=0.45, classes=Non
 
         # Box (center x, center y, width, height) to (x1, y1, x2, y2)
         box = xywh2xyxy(x[:, :4])
-        # print("box : " + str(box))
 
         # Detections matrix nx6 (xyxy, conf, cls)
         if multi_label:

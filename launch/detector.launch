@@ -13,7 +13,7 @@
     <arg name="confidence"                  default="0.25"/>
 
     <!-- Node -->
-    <node name="detector" pkg="yolov5_pytorch_ros" type="draw_detect.py" output="screen" respawn="true">
+    <node name="detector" pkg="yolov5_pytorch_ros" type="new_detect.py" output="screen" respawn="true">
         <param name="image_topic"               value="$(arg image_topic)"/>
         <param name="frame_id"               		value="camera"/>
         <param name="weights_path"              value="$(arg weights_path)"/>

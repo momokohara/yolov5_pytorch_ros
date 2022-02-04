@@ -173,8 +173,6 @@ class Detector:
                     detection_msg.ymax = int(ymax_unpad)
                     detection_msg.probability = float(conf)
                     detection_msg.Class = self.names[int(det_class)]
-                    
-                    # conf_boxes = 
 
                     # Append in overall detection message
                     detection_results.bounding_boxes.append(detection_msg)

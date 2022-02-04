@@ -153,16 +153,24 @@ class Detector:
                 for detection in detections[0]:
                     # Get xmin, ymin, xmax, ymax, confidence and class
                     xmin, ymin, xmax, ymax, conf, det_class = detection
-                    pad_x = max(self.h - self.w, 0) * \
-                        (self.network_img_size/max(self.h, self.w))
-                    pad_y = max(self.w - self.h, 0) * \
-                        (self.network_img_size/max(self.h, self.w))
+                    pad_x = max(self.h - self.w, 0) * (self.network_img_size/max(self.h, self.w))
+                    pad_y = max(self.w - self.h, 0) * (self.network_img_size/max(self.h, self.w))
                     unpad_h = self.network_img_size-pad_y
                     unpad_w = self.network_img_size-pad_x
                     xmin_unpad = ((xmin-pad_x//2)/unpad_w)*self.w
                     xmax_unpad = ((xmax-xmin)/unpad_w)*self.w + xmin_unpad
                     ymin_unpad = ((ymin-pad_y//2)/unpad_h)*self.h
                     ymax_unpad = ((ymax-ymin)/unpad_h)*self.h + ymin_unpad
+
+                    if xmin_unpad < 0:
+                        xmin_unpad = 0
+                    if ymin_unpad < 0:
+                        ymin_unpad = 0
+                    if xmax_unpad > 640:
+                        xmax_unpad = 640
+                    if ymax_unpad >480:
+                        ymax_unpad = 480
+
 
                     # Populate darknet message
                     detection_msg = BoundingBox()
@@ -182,11 +190,15 @@ class Detector:
 
             # Visualize detection results
             if (self.publish_image):
-                self.visualize_and_publish(detection_results, self.cv_img)
+                self.visualize_and_publish(detection_results, self.input_img)
 
     def preprocess(self, img):
         # Extract image and shape
-        img = np.copy(img)
+        img = cv2.resize(img, (640, 320))
+        img_left = img[0:320, 0:80]
+        img_right = img[0:320, 80:640]
+        self.input_img = cv2.hconcat([img_right, img_left])
+        img = np.copy(self.input_img)
         img = img.astype(float)
         height, width, channels = img.shape
         if (height != self.h) or (width != self.w):
@@ -198,11 +210,9 @@ class Detector:
 
         # Add padding
         if (self.w > self.h):
-            self.padded_image[(self.w-self.h)//2: self.h +
-                              (self.w-self.h)//2, :, :] = img
+            self.padded_image[(self.w-self.h)//2: self.h + (self.w-self.h)//2, :, :] = img
         else:
-            self.padded_image[:, (self.h-self.w)//2: self.w +
-                              (self.h-self.w)//2, :] = img
+            self.padded_image[:, (self.h-self.w)//2: self.w + (self.h-self.w)//2, :] = img
         # Resize and normalize
         input_img = cv2.resize(self.padded_image, (self.network_img_size, self.network_img_size))/255.
 
